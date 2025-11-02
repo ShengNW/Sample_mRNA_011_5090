@@ -83,9 +83,15 @@ def main():
             fmt=cfg.output_format
         )
 
-        # 7) Build index table and write split indices
+        # 7) Build index table (包含 part/local，避免依赖回退路径) 并写出 split indices
+        N = len(df)
+        sample_id = np.arange(N, dtype=np.int64)
+        part_id   = (sample_id // cfg.shard_size).astype(np.int64)
+        local_idx = (sample_id %  cfg.shard_size).astype(np.int64)
         idx_df = pd.DataFrame({
-            "sample_id": np.arange(len(df), dtype=np.int64),
+            "sample_id": sample_id,
+            "part_id": part_id,
+            "local_idx": local_idx,
             "organ_id": df[cfg.col_organ].astype(str).values,
             "class_idx": y,
             "split": df["split"].values,

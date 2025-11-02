@@ -88,7 +88,7 @@ def _worker_init_fn(worker_id: int):
     os.environ.setdefault('MKL_NUM_THREADS', '1')
 
 
-def _build_criterion(cfg: Dict[str, Any]) -> nn.Module:
+def _build_criterion(cfg: Dict[str, Any], device: str | torch.device = "cpu") -> nn.Module:
     loss_cfg = cfg.get('loss', {})
     label_smoothing = float(loss_cfg.get('label_smoothing', 0.0))
     class_weights = loss_cfg.get('class_weights', None)
@@ -100,7 +100,24 @@ def _build_criterion(cfg: Dict[str, Any]) -> nn.Module:
             obj = json.load(f)
         if isinstance(obj, dict) and 'weights' in obj:
             obj = obj['weights']
-        weight_tensor = torch.tensor(obj, dtype=torch.float32)
+        weight_tensor = torch.tensor(obj, dtype=torch.float32, device=device)
+    elif isinstance(class_weights, str) and class_weights.lower() == "auto":
+        # 自动根据训练 split 的 class_idx 频次计算反频率权重
+        try:
+            import pandas as _pd
+        except Exception:
+            raise RuntimeError("class_weights=auto 需要 pandas。请 `pip install pandas pyarrow`。")
+        ddir = cfg['data']['dataset_dir']
+        ip = os.path.join(ddir, "index", "train", "index.parquet")
+        if not os.path.exists(ip):
+            ip = os.path.join(ddir, "index", "train", "index.csv")
+        df = _pd.read_parquet(ip) if ip.endswith(".parquet") else _pd.read_csv(ip)
+        counts = df["class_idx"].value_counts().sort_index()
+        # 防止除零：clip 到 1
+        weights = 1.0 / counts.clip(lower=1).to_numpy(dtype=float)
+        # 归一到均值=1（数值更稳）
+        weights = weights / weights.mean()
+        weight_tensor = torch.tensor(weights, dtype=torch.float32, device=device)
     criterion = nn.CrossEntropyLoss(weight=weight_tensor, label_smoothing=label_smoothing)
     return criterion
 
@@ -379,7 +396,7 @@ def run_training(cfg: Dict[str, Any]):
     optim_cfg = cfg.get('optim', {'optimizer':'adamw','lr':1e-3,'weight_decay':1e-2})
     optimizer = build_optimizer_with_bn_exclusion(model, optim_cfg)
 
-    criterion = _build_criterion(cfg)
+    criterion = _build_criterion(cfg, device=device)
 
     amp_enabled = bool(cfg['train'].get('amp', False)) and (device.type == 'cuda')
     scaler = torch.cuda.amp.GradScaler(enabled=amp_enabled)
