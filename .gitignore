@@ -60,3 +60,7 @@ __init__.*
 # 旧版文件（含 `_old.`）
 *_old.*
 **/*_old.*
+# === generated artifacts ===
+# 忽略任何名字里包含 "_new" 的文件/目录（例如 reports_new_000_100/）
+*_new*/
+*_new*
