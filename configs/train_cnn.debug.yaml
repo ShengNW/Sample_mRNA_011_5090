@@ -46,7 +46,7 @@ loss:
 
 optim:
   optimizer: adamw
-  lr: 1.0e-2 #3.0e-3         #1e-3 #3e-4
+  lr: 6.0e-3 #1.0e-2 #3.0e-3         #1e-3 #3e-4
   weight_decay: 0.0  # 过拟合小集先关正则 1.0e-4 #weight_decay: 1.0e-2   # [MOD.opt_wd] 与示例一致（之前是 1e-4）
   scheduler: cosine
   warmup_steps: 0
@@ -55,12 +55,12 @@ optim:
 # 两阶段训练日程（新增）
 # -------------------------------
 schedule:                 # [MOD.schedule] 新增：阶段A/B配置
-  warmup_epochs: 5 #3        # 阶段A：端到端 3 轮
-  probe_head_epochs: 0 #1    # 阶段B：head-only 探针 1 轮
+  warmup_epochs: 100 #30 #3        # 阶段A：端到端 3 轮
+  probe_head_epochs: 1 #1    # 阶段B：head-only 探针 1 轮
   probe_head_lr: 0.01
 
 train:
-  epochs: 5 #3               # [MOD.epochs] 与示例一致：warmup 轮数=3（被 schedule 覆盖也无妨）
+  epochs: 100 #30 #3               # [MOD.epochs] 与示例一致：warmup 轮数=3（被 schedule 覆盖也无妨）
   early_stopping_patience: 1 #0
   batch_size: 256    # 可适当减小，增大梯度噪声 512 #256 #64 #8 #128 #64
   num_workers: 20 #8 #4 #12 #0
