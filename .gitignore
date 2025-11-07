@@ -25,6 +25,7 @@ runs/
 
 # 数据（原始与处理后）
 data/
+data_intermediate/
 *.parquet
 *.npz
 *.npy
