@@ -75,3 +75,4 @@ reports_unknow/
 configs/*.yaml
 !configs/train_cnn_regression_norm_000_3.yaml
 !configs/dataset.yaml
+!configs/train_rbp_trna.yaml
