@@ -6,9 +6,9 @@ import torch.optim as optim
 import yaml
 
 # Import the modules (assuming they are in the same package or accessible)
-from features import load_utr_coords, load_rbp_features, load_trna_features, load_tissue_embeddings
-from dataset import UTRDataset
-from model import CNNFiLMModel
+from .features import load_utr_coords, load_rbp_features, load_trna_features, load_tissue_embeddings
+from .dataset import UTRDataset
+from .model import CNNFiLMModel
 
 def run_training(cfg):
     # Setup device and distributed training if applicable
