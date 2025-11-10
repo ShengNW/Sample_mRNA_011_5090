@@ -36,12 +36,55 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
+
 import numpy as np
 import pandas as pd
 import torch
 import yaml
 
 from src.side.features import load_utr_coords
+
+
+def _resolve_path_case_insensitive(path: Path) -> Path:
+    """Resolve a potentially mis-cased path by searching case-insensitively."""
+
+    expanded = path.expanduser()
+    if expanded.exists():
+        return expanded
+
+    # Determine the starting directory (absolute anchor or current working dir).
+    if expanded.is_absolute():
+        current = Path(expanded.anchor)
+        parts = expanded.parts[1:]
+    else:
+        current = Path.cwd()
+        parts = expanded.parts
+
+    for part in parts:
+        if part in ("", "."):
+            continue
+        if part == "..":
+            current = current.parent
+            continue
+
+        try:
+            entries = {p.name.lower(): p for p in current.iterdir()}
+        except FileNotFoundError as exc:  # Directory doesn't exist at any case.
+            raise FileNotFoundError(
+                f"Directory '{current}' not found while resolving '{path}'."
+            ) from exc
+
+        match = entries.get(part.lower())
+        if match is None:
+            raise FileNotFoundError(
+                f"Path component '{part}' not found under '{current}' (case-insensitive search)."
+            )
+        current = match
+
+    if current.exists():
+        return current
+
+    raise FileNotFoundError(f"Path '{path}' could not be resolved case-insensitively.")
 
 # ---------------------------------------------------------------------------
 # Helper dataclasses
@@ -242,6 +285,7 @@ def build_rbp_masks(
 def build_trna_features(
     trna_bed: Path, trunc_map: Mapping[str, UTRTruncationMap]
 ) -> Dict[str, float]:
+    trna_bed = _resolve_path_case_insensitive(trna_bed)
     positions: Dict[str, List[int]] = defaultdict(list)
     with open(trna_bed, "r") as fh:
         for line in fh:
