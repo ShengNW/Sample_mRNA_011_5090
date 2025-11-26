@@ -111,8 +111,15 @@ def plot_pred_obs(df: pd.DataFrame, metrics: Dict, out_path: Path) -> None:
     ax.set_xlabel("Observed")
     ax.set_ylabel("Predicted")
     ax.set_title("Pred vs Obs")
-    ax.text(0.05, 0.95, f"R2={metrics[r2]:.3f}\nρ={metrics[rho]:.3f}\nRMSE={metrics[rmse]:.3f}",
-            transform=ax.transAxes, va="top", ha="left", bbox=dict(facecolor="white", alpha=0.8, edgecolor="none"))
+    ax.text(
+        0.05,
+        0.95,
+        f"R2={metrics['r2']:.3f}\nρ={metrics['rho']:.3f}\nRMSE={metrics['rmse']:.3f}",
+        transform=ax.transAxes,
+        va="top",
+        ha="left",
+        bbox=dict(facecolor="white", alpha=0.8, edgecolor="none"),
+    )
     out_path.parent.mkdir(parents=True, exist_ok=True)
     fig.tight_layout()
     fig.savefig(out_path, dpi=200)

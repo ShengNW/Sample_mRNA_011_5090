@@ -23,6 +23,7 @@ outputs/
 runs/
 *.log
 
+reports/
 # 数据（原始与处理后）
 data/
 data_intermediate/
