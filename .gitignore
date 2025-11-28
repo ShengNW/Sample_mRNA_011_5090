@@ -10,7 +10,7 @@ Thumbs.db
 venv/
 .env
 .env.*
-
+r.sh
 # ===== 项目产物 / 大文件 =====
 # 模型检查点
 checkpoints/
