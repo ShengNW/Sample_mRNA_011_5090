@@ -32,7 +32,7 @@ data_intermediate/
 *.npy
 *.pkl
 *.pickle
-
+Phase2Data/
 # 旧版/废弃分支（文件 & 目录）
 *_old_*
 *_old.*/
